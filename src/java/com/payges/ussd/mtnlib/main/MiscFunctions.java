@@ -5,6 +5,7 @@
  */
 package com.payges.ussd.mtnlib.main;
 
+import com.payges.ussd.mtnlib.entities.Serials;
 import com.payges.ussd.mtnlib.util.UssdConstants;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,19 +34,23 @@ public class MiscFunctions {
     public static ExecutorService threadsExecutor = Executors.newFixedThreadPool(100);
     
     String resendLastPin(UssdSession session) {
-        return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.INVALID_INPUT);
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Serials serials = ussdBean.getLastTransaction(session.getMsisdn());
+        if(null == serials){
+            ussdBean.saveUssdLog(session.getMsisdn(), "RESEND_PIN", "FAILED");
+            return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.NO_LAST_PIN_MESSAGE);
+        } else{
+            ussdBean.saveUssdLog(session.getMsisdn(), "RESEND_PIN", "SUCCESS");
+            final String response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.RESEND_PIN_MESSAGE)
+                    .replace("{PIN}", serials.getPin()).replace("{SERIAL}", serials.getSerial());
+            ussdBean.sendSMS(session.getMsisdn(), response);
+            return response;
+        }
     }
-
+    
     String initiateDebit(UssdSession session) {
         Runnable runnable = new DebitWorkerThread(session.getSelectedCurrency(), session.getMsisdn());
         threadsExecutor.execute(runnable);
         return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
-//        if(session.getSelectedCurrency().equals("LRD")){
-//            return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
-//        }else{
-//            return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
-//        }
     }
 
     private UssdBean lookupUssdBeanBean() {

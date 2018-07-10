@@ -49,7 +49,8 @@ public enum MenuActions {
                     response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.INVALID_INPUT);
             }
             UssdSession.sessions.remove(session.getMsisdn());
-            return UssdConstants.CONTINUE+UssdConstants.MESSAGES.getProperty(UssdConstants.MAIN_MENU);
+            return response;
+            //return UssdConstants.CONTINUE+UssdConstants.MESSAGES.getProperty(UssdConstants.MAIN_MENU);
         }
         
     };

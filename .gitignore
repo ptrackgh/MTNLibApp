@@ -1,2 +1,4 @@
 build/web/WEB_INF/classes/
 dist/
+/build/
+/nbproject/private/

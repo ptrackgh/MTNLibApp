@@ -18,4 +18,9 @@
         <ejb-ref-type>Session</ejb-ref-type>
         <ejb-link>#UssdBean</ejb-link>
     </ejb-local-ref>
+    <ejb-local-ref>
+        <ejb-ref-name>UssdBean1</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <ejb-link>#UssdBean</ejb-link>
+    </ejb-local-ref>
 </web-app>
