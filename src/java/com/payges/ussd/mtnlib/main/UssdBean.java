@@ -7,8 +7,6 @@ package com.payges.ussd.mtnlib.main;
 
 import com.payges.ussd.mtnlib.entities.Response;
 import com.payges.ussd.mtnlib.entities.Serials;
-import com.payges.ussd.mtnlib.entities.Smslog;
-import com.payges.ussd.mtnlib.entities.Transactions;
 import com.payges.ussd.mtnlib.entities.Ussdlogs;
 import java.util.Arrays;
 import java.util.Date;
@@ -53,7 +51,9 @@ public class UssdBean {
 //    }
     
     public Serials getLastTransaction(String msisdn){
-        List<Serials> resultList = em.createNamedQuery("Serials.findLastTransactionByMsisdn").setParameter("msisdn", msisdn).setMaxResults(1).getResultList();
+        Logger.getLogger(getClass().getName()).info("called getLastTransaction for "+ msisdn);
+        List<Serials> resultList = em.createNamedQuery("Serials.findLastTransactionByMsisdn").setParameter("usedby", msisdn).setMaxResults(1).getResultList();
+        Logger.getLogger(getClass().getName()).info("finished saveUssdLog for "+ msisdn);
         if(null == resultList || resultList.isEmpty()){
             return null;
         }else{
@@ -62,15 +62,18 @@ public class UssdBean {
     }
     
     public void saveUssdLog(String msisdn, String operation, String status){
+        Logger.getLogger(getClass().getName()).info("called saveUssdLog for "+ msisdn);
         Ussdlogs ussdlog = new Ussdlogs();
         ussdlog.setMsisdn(msisdn);
         ussdlog.setRequestdate(new Date());
         ussdlog.setStatus(status);
         ussdlog.setUseroperation(operation);
         persist(ussdlog);
+        Logger.getLogger(getClass().getName()).info("finished saveUssdLog for "+ msisdn);
     }
     
     public void sendSMS(String msisdn, String message){
+        Logger.getLogger(getClass().getName()).info("called sendSMS for "+ msisdn);
         Response sms = new Response();
         sms.setMsisdn(msisdn);
         sms.setMessage(message);
@@ -85,5 +88,6 @@ public class UssdBean {
         sms.setDestTon(Short.valueOf("1"));
         sms.setDestNpi(Short.valueOf("1"));
         persist(sms);
+        Logger.getLogger(getClass().getName()).info("finished saveUssdLog for "+ msisdn);
     }
 }

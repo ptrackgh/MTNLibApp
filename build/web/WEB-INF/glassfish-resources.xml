@@ -5,8 +5,8 @@
         <property name="serverName" value="138.201.56.152"/>
         <property name="portNumber" value="3306"/>
         <property name="databaseName" value="elussd"/>
-        <property name="User" value="qmobile"/>
-        <property name="Password" value="qmobile123"/>
+        <property name="User" value="glassfish"/>
+        <property name="Password" value="glassfish123"/>
         <property name="URL" value="jdbc:mysql://138.201.56.152:3306/elussd?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>

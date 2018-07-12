@@ -19,38 +19,33 @@ import org.apache.log4j.Logger;
  * @author ptrack
  */
 public class MiscFunctions {
-
     UssdBean ussdBean = lookupUssdBeanBean();
-//    public static final String INVALID_INPUT="INVALID_INPUT";
-//    public static final String LRD_MESSAGE="LRD_MESSAGE";
-//    public static final String USD_MESSAGE="USD_MESSAGE";
-//    public static final String RESEND_PIN_MESSAGE="RESEND_PIN_MESSAGE";
-//    public static final String NO_LAST_PIN_MESSAGE="NO_LAST_PIN_MESSAGE";
-//    public static final String LRD_HOLDING_MESSAGE="LRD_HOLDING_MESSAGE";
-//    public static final String LRD_HOLDING_MESSAGE="LRD_HOLDING_MESSAGE";
-    
-//    final Runnable workerThread = new MiniStmtWorkerThread(accntNo, uInfo.getAffiliateCode(), sInfo.getLang(), sInfo.getMobileNo(),sInfo.getSessionId(), uInfo.getNetwork());
-//    MenuUtil.miniStmtExecutor.execute(workerThread);
     public static ExecutorService threadsExecutor = Executors.newFixedThreadPool(100);
+    Logger logger = Logger.getLogger(getClass());
     
     String resendLastPin(UssdSession session) {
+        logger.info("called resendLastPin for "+ session.getMsisdn());
         Serials serials = ussdBean.getLastTransaction(session.getMsisdn());
         if(null == serials){
             ussdBean.saveUssdLog(session.getMsisdn(), "RESEND_PIN", "FAILED");
             return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.NO_LAST_PIN_MESSAGE);
         } else{
             ussdBean.saveUssdLog(session.getMsisdn(), "RESEND_PIN", "SUCCESS");
-            final String response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.RESEND_PIN_MESSAGE)
+            final String response = UssdConstants.MESSAGES.getProperty(UssdConstants.RESEND_PIN_MESSAGE)
                     .replace("{PIN}", serials.getPin()).replace("{SERIAL}", serials.getSerial());
             ussdBean.sendSMS(session.getMsisdn(), response);
-            return response;
+            return UssdConstants.END+response;
         }
     }
     
     String initiateDebit(UssdSession session) {
+        logger.info("called initiate debit request for "+ session.getMsisdn());
         Runnable runnable = new DebitWorkerThread(session.getSelectedCurrency(), session.getMsisdn());
+        //threadsExecutor.
         threadsExecutor.execute(runnable);
-        return UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
+        final String response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
+        logger.info("sending {"+ response+"} to "+session.getMsisdn());
+        return response;
     }
 
     private UssdBean lookupUssdBeanBean() {
@@ -58,7 +53,7 @@ public class MiscFunctions {
             Context c = new InitialContext();
             return (UssdBean) c.lookup("java:global/MTNLibApp/UssdBean!com.payges.ussd.mtnlib.main.UssdBean");
         } catch (NamingException ne) {
-            Logger.getLogger(getClass().getName()).info("NamingException caught. Reason: "+ ne.getMessage());
+            logger.info("NamingException caught. Reason: "+ ne.getMessage());
             throw new RuntimeException(ne);
         }
     }

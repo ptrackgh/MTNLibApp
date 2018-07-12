@@ -46,28 +46,32 @@ public class MTNLibUSSD extends HttpServlet {
                 final String shortcode = getField(request, "SERVICE_CODE");
                 final String ussdstring = getField(request, "TEXT");
                 final String ussdresponse;
-                logger.info("new request|"+msisdn+"|"+dialogueid+"|"+shortcode+"|"+ussdstring);
-                if(ussdstring.equals("737")){
+                logger.info("0|"+msisdn+"|"+dialogueid+"|"+shortcode+"|"+ussdstring);
+                if(ussdstring.equals("517")){
                     UssdSession.sessions.remove(msisdn);
                     UssdSession usersession = new UssdSession();
                     usersession.setMsisdn(msisdn);
                     usersession.setMenuLevel(0);
+                    usersession.setSelectedOperation("MAIN_MENU");
                     ussdresponse = UssdConstants.CONTINUE+UssdConstants.MESSAGES.getProperty(UssdConstants.MAIN_MENU);
+                    UssdSession.sessions.put(msisdn, usersession);
                 }else{
-                    Logger.getLogger(this.getClass()).info("invalid request received from: " + msisdn);
                     final UssdSession existingSession = UssdSession.sessions.get(msisdn);
                     if(null==existingSession){
                         Logger.getLogger(this.getClass()).error("invalid request received from: " + msisdn);
                         ussdresponse = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.BAD_REQUEST);
                     }else{
+                        Logger.getLogger(this.getClass()).info("continue request received from: " + msisdn);
                         existingSession.setMenuLevel(existingSession.getMenuLevel()+1);
                         MenuActions action = MenuActions.getMenuAction(existingSession.getSelectedOperation());
                         ussdresponse = action.execute(existingSession, ussdstring);
                     }
                 }
+                logger.info("1|"+msisdn+"|"+dialogueid + "|"+ ussdresponse.replace("\n", "|"));
                 out.println(ussdresponse);
             } catch (Exception ex) {
-                Logger.getLogger("getField").error("Exception thrown. Reason: " + ex.getMessage());
+                logger.error("Exception thrown. Reason: " + ex.getMessage());
+                logger.error("1|2,Internal Error occured. Please try again.");
                 out.println(UssdConstants.END+"Internal Error occured. Please try again.");
             }
         } 
@@ -115,7 +119,7 @@ public class MTNLibUSSD extends HttpServlet {
     String getField(HttpServletRequest request, String param) throws Exception {
         if (request.getParameter(param) != null) {
             final String value = request.getParameter(param);
-            Logger.getLogger("getField").info(param + " has value: " + value);
+            logger.info(param + " has value: " + value);
             return value;
         }
         throw new Exception("No value found for: " + param);
