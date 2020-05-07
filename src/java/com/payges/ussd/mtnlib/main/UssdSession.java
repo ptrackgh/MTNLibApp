@@ -5,6 +5,7 @@
  */
 package com.payges.ussd.mtnlib.main;
 
+import com.payges.ussd.mtnlib.waec.dto.VendStatusResponse;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,6 +18,8 @@ public class UssdSession {
     private int menuLevel;
     private String selectedCurrency;
     private String selectedOperation;
+    private String pintype;
+    private VendStatusResponse vendstatus;
     
 
     /**
@@ -73,5 +76,26 @@ public class UssdSession {
      */
     public void setMenuLevel(int menuLevel) {
         this.menuLevel = menuLevel;
+    }
+
+    public String getPintype() {
+        return pintype;
+    }
+
+    public void setPintype(String pintype) {
+        this.pintype = pintype;
+    }
+
+    @Override
+    public String toString() {
+        return "UssdSession{" + "msisdn=" + msisdn + ", menuLevel=" + menuLevel + ", selectedCurrency=" + selectedCurrency + ", selectedOperation=" + selectedOperation + ", pintype=" + pintype + '}';
+    }
+
+    public VendStatusResponse getVendstatus() {
+        return vendstatus;
+    }
+
+    public void setVendstatus(VendStatusResponse vendstatus) {
+        this.vendstatus = vendstatus;
     }
 }

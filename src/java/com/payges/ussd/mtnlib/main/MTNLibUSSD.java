@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 
 /**
  *
@@ -21,6 +22,7 @@ import org.apache.log4j.Logger;
 public class MTNLibUSSD extends HttpServlet {
 
     Logger logger = Logger.getLogger(this.getClass());
+    final String respMsg = "Service temporarily closed for WAEC Resitter until the next exam. Service will be re-opened for 2019 exams";
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,7 +39,7 @@ public class MTNLibUSSD extends HttpServlet {
         //http://IP:PORT/URI?dialogueid=51873&amp;msisdndigits=23188465431&amp;msisdnno=23188465431&amp;shortcode=126&amp;ussdstring=*126#
         //above is no longer used. check below for the valid format of the request.
         ///MTNLibApp/paygesussd?MSISDN=231881439175&SERVICE_CODE=737&DIALOGUEID=32878&TEXT=517&USER_ID=5656566&PASSWORD=tytyty
-        Logger.getLogger("getField").error("new request received: " + request.getQueryString());
+        logger.info("new request received: " + request.getQueryString());
         try (PrintWriter out = response.getWriter()) {
             //final String respMessage = UssdConstants.MESSAGES.getProperty(UssdConstants.MAIN_MENU);
             try{
@@ -46,7 +48,21 @@ public class MTNLibUSSD extends HttpServlet {
                 final String shortcode = getField(request, "SERVICE_CODE");
                 final String ussdstring = getField(request, "TEXT");
                 final String ussdresponse;
+                MDC.put("session", msisdn);
                 logger.info("0|"+msisdn+"|"+dialogueid+"|"+shortcode+"|"+ussdstring);
+//                block for temporarily closed message
+//                logger.error("1|2,"+respMsg);
+//                out.println(UssdConstants.END+respMsg);
+
+///////////////////////////////BEGIN BLOCK FOR WHITELISTED NOs/////////////////////////////////////////////////////////////
+//                if(!msisdn.matches("231888921776|231881439175|231886501444")){
+//                    logger.info(msisdn+" not allowed to use the shortcode at this time");
+//                    out.println(UssdConstants.END+"You are not allowed to use the service at this time. Please try again later.");
+//                    MDC.remove("session");
+//                    return;
+//                }
+///////////////////////////////END BLOCK FOR WHITELISTED NOs/////////////////////////////////////////////////////////////
+
                 if(ussdstring.equals("517")){
                     UssdSession.sessions.remove(msisdn);
                     UssdSession usersession = new UssdSession();
@@ -74,6 +90,7 @@ public class MTNLibUSSD extends HttpServlet {
                 logger.error("1|2,Internal Error occured. Please try again.");
                 out.println(UssdConstants.END+"Internal Error occured. Please try again.");
             }
+            MDC.remove("session");
         } 
     }
 
@@ -119,7 +136,7 @@ public class MTNLibUSSD extends HttpServlet {
     String getField(HttpServletRequest request, String param) throws Exception {
         if (request.getParameter(param) != null) {
             final String value = request.getParameter(param);
-            logger.info(param + " has value: " + value);
+            //logger.info(param + " has value: " + value);
             return value;
         }
         throw new Exception("No value found for: " + param);

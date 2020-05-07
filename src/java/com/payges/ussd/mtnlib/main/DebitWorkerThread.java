@@ -5,12 +5,14 @@
  */
 package com.payges.ussd.mtnlib.main;
 
+import com.payges.ussd.mtnlib.entities.Currencies;
 import com.payges.ussd.mtnlib.util.UssdConstants;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -29,6 +31,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 
 /**
  *
@@ -36,9 +39,11 @@ import org.apache.log4j.Logger;
  */
 public class DebitWorkerThread implements Runnable {
     //static Logger logger = Logger.getLogger(DebitWorkerThread.getClass());
+    DecimalFormat df = new DecimalFormat("####0.00");
     UssdBean ussdBean = lookupUssdBeanBean();
     String currency;
     String msisdn;
+    UssdSession session;
     
     final static String spId = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_SP_ID);
     final static String spPassword = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_SP_PASSWORD);
@@ -104,13 +109,15 @@ public class DebitWorkerThread implements Runnable {
             + "</soapenv:Body>\n"
             + "</soapenv:Envelope>";
 
-    public DebitWorkerThread(String currency, String msisdn) {
-        this.msisdn = msisdn;
-        this.currency = currency;
+    public DebitWorkerThread(UssdSession session) {
+        this.session = session;
+        this.msisdn = session.getMsisdn();
+        this.currency = session.getSelectedCurrency();
     }
 
     @Override
     public void run() {
+        MDC.put("session", msisdn);
         Logger logger = Logger.getLogger(this.getClass());
         try {
             //new Thread().wait();
@@ -121,13 +128,21 @@ public class DebitWorkerThread implements Runnable {
             final String transactionId = getTransactionId();
             CloseableHttpClient client = getClientSSL(url);
             HttpPost post = new HttpPost(url);
-//			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000)
-//					.setConnectionRequestTimeout(30000).build();
-//			post.setConfig(requestConfig);
-//			post.setHeader("Content-Type", "application/xml");
-//			post.addHeader("ACCEPT", "application/xml");
-            //presetting amount to 60
-            final String xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,"60",msisdn,transactionId,currency);
+            final String xmlString;
+            if("REGISTRATION".equals(session.getPintype())){
+                Currencies debitAmount = ussdBean.getDebitAmount(currency);
+                ussdBean.saveUssdLog(msisdn, "PURCHASE_PIN_"+currency, "PENDING");
+                ussdBean.saveDebitTransaction(msisdn, debitAmount.getExchangerate(), currency, transactionId,"REGISTRATION");
+                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
+                        df.format(debitAmount.getExchangerate()),msisdn,transactionId,currency);
+            }else{
+//                Currencies debitAmount = ussdBean.getDebitAmount(currency);
+                ussdBean.saveUssdLog(msisdn, "RESULT_CHECKER_"+currency, "PENDING");
+                ussdBean.saveDebitTransaction(msisdn, Double.parseDouble(session.getVendstatus().getCost()), 
+                        session.getVendstatus().getCurrency(), transactionId,"RESULT_CHECKER");
+                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
+                        df.format(Double.parseDouble(session.getVendstatus().getCost())),msisdn,transactionId,session.getVendstatus().getCurrency());
+            }
             
             HttpEntity entity = new StringEntity(xmlString);
             post.setEntity(entity);
@@ -136,7 +151,7 @@ public class DebitWorkerThread implements Runnable {
             try (CloseableHttpResponse response1 = client.execute(post)) {
                 final Date after = new Date();
                 logger.info("http response received from HSDP @ " + new Date());
-                logger.info("HSDP_Stats|" + ((after.getTime() - before.getTime()) / 1000) + "|" + msisdn);
+                logger.info("HSDP_Stats|" + ((after.getTime() - before.getTime()) / 1000) + "secs|" + msisdn);
                 final HttpEntity entity1 = response1.getEntity();
                 final String httpResp = EntityUtils.toString(entity1).trim();
 //                final Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -148,13 +163,14 @@ public class DebitWorkerThread implements Runnable {
             } catch (IOException ex) {
                 logger.error("IOException thrown: " + ex.getMessage());
             }
-            ussdBean.sendSMS(msisdn, "This is a test message for " + currency + "{AMOUNT} sending PIN: 123456 with serial: 6541239834");
-            ussdBean.saveUssdLog(msisdn, "PIN_PURCHASE", "PENDING");
+            //ussdBean.sendSMS(msisdn, "This is a test message for " + currency + "{AMOUNT} sending PIN: 123456 with serial: 6541239834");
+            //ussdBean.saveUssdLog(msisdn, "PIN_PURCHASE_"+currency, "DONE");
         } catch (InterruptedException ex) {
             logger.error("InterruptedException thrown: " + ex.getMessage());
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException ex) {
             logger.error("KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException thrown: " + ex.getMessage());
         }
+        MDC.remove("session");
     }
 
 //    public static CloseableHttpClient getHttpClient(String s)

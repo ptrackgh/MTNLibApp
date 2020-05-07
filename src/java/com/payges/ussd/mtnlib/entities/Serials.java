@@ -29,13 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Serials.findAll", query = "SELECT s FROM Serials s"),
-    @NamedQuery(name = "Serials.findById", query = "SELECT s FROM Serials s WHERE s.id = :id"),
-    @NamedQuery(name = "Serials.findBySerial", query = "SELECT s FROM Serials s WHERE s.serial = :serial"),
-    @NamedQuery(name = "Serials.findByPin", query = "SELECT s FROM Serials s WHERE s.pin = :pin"),
-    @NamedQuery(name = "Serials.findByStatus", query = "SELECT s FROM Serials s WHERE s.status = :status"),
-    @NamedQuery(name = "Serials.findByDateloaded", query = "SELECT s FROM Serials s WHERE s.dateloaded = :dateloaded"),
-    @NamedQuery(name = "Serials.findByLastupdatetime", query = "SELECT s FROM Serials s WHERE s.lastupdatetime = :lastupdatetime"),
-    @NamedQuery(name = "Serials.findByUsedby", query = "SELECT s FROM Serials s WHERE s.usedby = :usedby"),
+    @NamedQuery(name = "Serials.findNextUnusedSerial", query = "SELECT s FROM Serials s WHERE s.status = 'NEW'"),
     @NamedQuery(name = "Serials.findLastTransactionByMsisdn", query = "SELECT s FROM Serials s WHERE s.usedby = :usedby order by s.dateused desc"),
     @NamedQuery(name = "Serials.findByDateused", query = "SELECT s FROM Serials s WHERE s.dateused = :dateused")})
 public class Serials implements Serializable {
@@ -49,8 +43,11 @@ public class Serials implements Serializable {
     @Column(name = "serial")
     private String serial;
     @Size(max = 15)
-    @Column(name = "pin")
+    @Column(name = "waecpin")
     private String pin;
+    @Size(max = 20)
+    @Column(name = "transactionid")
+    private String transactionid;
     @Size(max = 9)
     @Column(name = "status")
     private String status;
@@ -166,6 +163,20 @@ public class Serials implements Serializable {
     @Override
     public String toString() {
         return "com.payges.ussd.mtnlib.entities.Serials[ id=" + id + " ]";
+    }
+
+    /**
+     * @return the transactionid
+     */
+    public String getTransactionid() {
+        return transactionid;
+    }
+
+    /**
+     * @param transactionid the transactionid to set
+     */
+    public void setTransactionid(String transactionid) {
+        this.transactionid = transactionid;
     }
     
 }

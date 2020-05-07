@@ -38,10 +38,20 @@ public class MiscFunctions {
         }
     }
     
+    boolean isAnySerialUnused(String msisdn) {
+        logger.info("called isAnySerialUnused for "+ msisdn);
+        Serials nextUnusedSerial = ussdBean.getNextUnusedSerial();
+        //Serials serials = ussdBean.Serials nextUnusedSerial = ussdBean.getNextUnusedSerial();(session.getMsisdn());
+        if(null == nextUnusedSerial){
+            return false;
+        } else{
+            return true;
+        }
+    }
+    
     String initiateDebit(UssdSession session) {
         logger.info("called initiate debit request for "+ session.getMsisdn());
-        Runnable runnable = new DebitWorkerThread(session.getSelectedCurrency(), session.getMsisdn());
-        //threadsExecutor.
+        Runnable runnable = new DebitWorkerThread(session);
         threadsExecutor.execute(runnable);
         final String response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
         logger.info("sending {"+ response+"} to "+session.getMsisdn());

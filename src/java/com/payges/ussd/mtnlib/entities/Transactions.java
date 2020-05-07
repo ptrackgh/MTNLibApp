@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Transactions.findByAmount", query = "SELECT t FROM Transactions t WHERE t.amount = :amount"),
     @NamedQuery(name = "Transactions.findByStatus", query = "SELECT t FROM Transactions t WHERE t.status = :status"),
     @NamedQuery(name = "Transactions.findByRequestdate", query = "SELECT t FROM Transactions t WHERE t.requestdate = :requestdate"),
-    @NamedQuery(name = "Transactions.findByTransactionid", query = "SELECT t FROM Transactions t WHERE t.transactionid = :transactionid"),
+    @NamedQuery(name = "Transactions.findByTransactionid", query = "SELECT t FROM Transactions t WHERE t.status='PENDING' AND  t.transactionid = :transactionid"),
     @NamedQuery(name = "Transactions.findByLastresponsedate", query = "SELECT t FROM Transactions t WHERE t.lastresponsedate = :lastresponsedate"),
     @NamedQuery(name = "Transactions.findByExternaltransactionid", query = "SELECT t FROM Transactions t WHERE t.externaltransactionid = :externaltransactionid"),
     @NamedQuery(name = "Transactions.findByRetries", query = "SELECT t FROM Transactions t WHERE t.retries = :retries"),
@@ -57,20 +57,31 @@ public class Transactions implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "amount")
     private Double amount;
-    @Size(max = 5)
+    @Size(max = 15)
     @Column(name = "status")
     private String status;
+    @Size(max = 300)
+    @Column(name = "statusdesc")
+    private String statusdesc;
+    @Size(max = 10)
+    @Column(name = "momostatus")
+    private String momostatus;
+    @Size(max = 50)
+    @Column(name = "traceid")
+    private String traceid;
     @Column(name = "requestdate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date requestdate;
     @Column(name = "transactionid")
-    private Integer transactionid;
+    private String transactionid;
     @Column(name = "lastresponsedate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastresponsedate;
     @Size(max = 50)
     @Column(name = "externaltransactionid")
     private String externaltransactionid;
+    @Column(name = "pintype")
+    private String pintype;
     @Column(name = "retries")
     private Integer retries;
     @Column(name = "exchangerate")
@@ -136,11 +147,11 @@ public class Transactions implements Serializable {
         this.requestdate = requestdate;
     }
 
-    public Integer getTransactionid() {
+    public String getTransactionid() {
         return transactionid;
     }
 
-    public void setTransactionid(Integer transactionid) {
+    public void setTransactionid(String transactionid) {
         this.transactionid = transactionid;
     }
 
@@ -196,9 +207,58 @@ public class Transactions implements Serializable {
         return true;
     }
 
+    /**
+     * @return the statusdesc
+     */
+    public String getStatusdesc() {
+        return statusdesc;
+    }
+
+    /**
+     * @param statusdesc the statusdesc to set
+     */
+    public void setStatusdesc(String statusdesc) {
+        this.statusdesc = statusdesc;
+    }
+
+    /**
+     * @return the traceid
+     */
+    public String getTraceid() {
+        return traceid;
+    }
+
+    /**
+     * @param traceid the traceid to set
+     */
+    public void setTraceid(String traceid) {
+        this.traceid = traceid;
+    }
+
+    /**
+     * @return the momostatus
+     */
+    public String getMomostatus() {
+        return momostatus;
+    }
+
+    /**
+     * @param momostatus the momostatus to set
+     */
+    public void setMomostatus(String momostatus) {
+        this.momostatus = momostatus;
+    }
+
+    public String getPintype() {
+        return pintype;
+    }
+
+    public void setPintype(String pintype) {
+        this.pintype = pintype;
+    }
+
     @Override
     public String toString() {
-        return "com.payges.ussd.mtnlib.entities.Transactions[ id=" + id + " ]";
+        return "Transactions{" + "id=" + id + ", msisdn=" + msisdn + ", currency=" + currency + ", amount=" + amount + ", status=" + status + ", statusdesc=" + statusdesc + ", momostatus=" + momostatus + ", traceid=" + traceid + ", requestdate=" + requestdate + ", transactionid=" + transactionid + ", lastresponsedate=" + lastresponsedate + ", externaltransactionid=" + externaltransactionid + ", pintype=" + pintype + ", retries=" + retries + ", exchangerate=" + exchangerate + '}';
     }
-    
 }

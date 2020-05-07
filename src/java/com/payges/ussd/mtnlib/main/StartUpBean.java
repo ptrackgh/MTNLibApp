@@ -27,7 +27,8 @@ public class StartUpBean {
     @PostConstruct
     public void init() {
         Logger logger = Logger.getLogger(this.getClass());
-        String languagePath = "/applications/mtnlib/conf/strings/ussdstrings.props";
+//        String languagePath = "/applications/mtnlib/conf/strings/ussdstrings.props";
+        String languagePath = "/home/payges/applications/waec/conf/strings/ussdstrings.props";
         try {
             UssdConstants.MESSAGES.load(new FileInputStream(languagePath));
             //PropertyConfigurator.configure(p);

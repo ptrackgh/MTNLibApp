@@ -7,12 +7,15 @@ package com.payges.ussd.mtnlib.main;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.io.IOUtils;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
 /**
@@ -23,6 +26,11 @@ import org.apache.log4j.Logger;
 public class DebitCallbackProcessor extends HttpServlet {
 
     Logger logger = Logger.getLogger(getClass());
+    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+    @PersistenceContext(unitName = "MTNLibAppPU")
+    private EntityManager em;
+    @Resource
+    private javax.transaction.UserTransaction utx;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,10 +45,14 @@ public class DebitCallbackProcessor extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            final String req = IOUtils.toString(request.getInputStream());
-            logger.info(req);
+            //final String req = IOUtils.toString(request.getInputStream());
+            PaymentCompletedXMLParser xml = new PaymentCompletedXMLParser();
+            saxParserFactory.newSAXParser().parse(request.getInputStream(), xml);
+            Runnable runnable = new DebitCompletedProcessor(xml.getTrace(),xml.getTransid(),xml.getExternalid(),xml.getStatus(),xml.getStatusdesc());
+            MiscFunctions.threadsExecutor.execute(runnable);
             out.println(response);
+        } catch (Exception ex) {
+            logger.error("Exception thrown. Reason: " + ex.getMessage());
         }
     }
 
@@ -88,5 +100,16 @@ public class DebitCallbackProcessor extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    public void persist(Object object) {
+        try {
+            utx.begin();
+            em.persist(object);
+            utx.commit();
+        } catch (Exception e) {
+            logger.error("exception caught"+ e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 
 }
