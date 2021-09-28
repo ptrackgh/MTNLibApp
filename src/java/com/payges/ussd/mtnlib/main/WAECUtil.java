@@ -78,19 +78,19 @@ public class WAECUtil {
                     final HttpEntity entity1 = response1.getEntity();
                     final String httpResp = EntityUtils.toString(entity1).trim();
                     resp = gson.fromJson(httpResp, VendStatusResponse.class);
-                    logger.info("response from HSDP: " + httpResp);
+                    logger.info("response from WAEC: " + httpResp);
                     EntityUtils.consume(entity1);
                     response1.close();
                 } catch (IOException ex) {
                     logger.error("IOException thrown: " + ex.getMessage());
-                    logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
+                    logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
                 }
             } catch (KeyManagementException|UnsupportedEncodingException|NoSuchAlgorithmException|KeyStoreException ex) {
                 logger.error("KeyManagementException|UnsupportedEncodingException|NoSuchAlgorithmException|KeyStoreException thrown: " + ex.getMessage());
-                logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
+                logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             } catch (Throwable ex) {
                     logger.error("Throwable thrown: " + ex.getMessage());
-                    logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
+                    logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             }
             return resp;
     }
@@ -126,19 +126,19 @@ public class WAECUtil {
                     final HttpEntity entity1 = response1.getEntity();
                     final String httpResp = EntityUtils.toString(entity1).trim();
                     resp = gson.fromJson(httpResp, VendPinResponse.class);
-                    logger.info("response from HSDP: " + httpResp);
+                    logger.info("response from WAEC: " + httpResp);
                     EntityUtils.consume(entity1);
                     response1.close();
                 } catch (IOException ex) {
-                    logger.error("IOException thrown: " + ex.getMessage());
+                    logger.error("IOException in: " + ex.getMessage());
                     logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
                 }
             } catch (KeyManagementException|UnsupportedEncodingException|NoSuchAlgorithmException|KeyStoreException ex) {
                 logger.error("KeyManagementException|UnsupportedEncodingException|NoSuchAlgorithmException|KeyStoreException thrown: " + ex.getMessage());
-                logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
+                logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             } catch (Throwable ex) {
-                    logger.error("Throwable thrown: " + ex.getMessage());
-                    logger.error("Throwable " + ex + " by " + Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
+                    logger.error("Throwable in: " + ex.getMessage());
+                    logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             }
             return resp;
     }

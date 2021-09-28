@@ -116,7 +116,7 @@ public class UssdBean {
     }
     
     public void saveUssdLog(String msisdn, String operation, String status){
-        Logger.getLogger(getClass().getName()).info("called saveUssdLog for "+ msisdn);
+        logger.info("called saveUssdLog for "+ msisdn);
         Ussdlogs ussdlog = new Ussdlogs();
         ussdlog.setMsisdn(msisdn);
         ussdlog.setRequestdate(new Date());
@@ -127,7 +127,7 @@ public class UssdBean {
     }
     
     public void saveDebitTransaction(String msisdn, double amount, String currency, String transactionid, String pintype){
-        Logger.getLogger(getClass().getName()).info("called saveDebitTransaction for "+ msisdn);
+        logger.info("called saveDebitTransaction for "+ msisdn);
         Transactions trans = new Transactions();
         trans.setMsisdn(msisdn);
         trans.setCurrency(currency);

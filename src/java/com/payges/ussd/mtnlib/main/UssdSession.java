@@ -19,6 +19,7 @@ public class UssdSession {
     private String selectedCurrency;
     private String selectedOperation;
     private String pintype;
+    private String dialogueID;
     private VendStatusResponse vendstatus;
     
 
@@ -85,17 +86,31 @@ public class UssdSession {
     public void setPintype(String pintype) {
         this.pintype = pintype;
     }
-
-    @Override
-    public String toString() {
-        return "UssdSession{" + "msisdn=" + msisdn + ", menuLevel=" + menuLevel + ", selectedCurrency=" + selectedCurrency + ", selectedOperation=" + selectedOperation + ", pintype=" + pintype + '}';
-    }
-
+    
     public VendStatusResponse getVendstatus() {
         return vendstatus;
     }
 
     public void setVendstatus(VendStatusResponse vendstatus) {
         this.vendstatus = vendstatus;
+    }
+
+    /**
+     * @return the dialogueID
+     */
+    public String getDialogueID() {
+        return dialogueID;
+    }
+
+    /**
+     * @param dialogueID the dialogueID to set
+     */
+    public void setDialogueID(String dialogueID) {
+        this.dialogueID = dialogueID;
+    }
+
+    @Override
+    public String toString() {
+        return "UssdSession{" + "msisdn=" + msisdn + ", menuLevel=" + menuLevel + ", selectedCurrency=" + selectedCurrency + ", selectedOperation=" + selectedOperation + ", pintype=" + pintype + ", dialogueID=" + dialogueID + ", vendstatus=" + vendstatus + '}';
     }
 }

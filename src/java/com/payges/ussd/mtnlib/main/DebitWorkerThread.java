@@ -14,6 +14,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import javax.naming.Context;
@@ -150,7 +151,7 @@ public class DebitWorkerThread implements Runnable {
             logger.info("Going to call URL: '" + url + "' request payload:\n" + xmlString.replace("\n", "") + "\n @ Date: " + before);
             try (CloseableHttpResponse response1 = client.execute(post)) {
                 final Date after = new Date();
-                logger.info("http response received from HSDP @ " + new Date());
+                logger.info("debit response @ " + new Date());
                 logger.info("HSDP_Stats|" + ((after.getTime() - before.getTime()) / 1000) + "secs|" + msisdn);
                 final HttpEntity entity1 = response1.getEntity();
                 final String httpResp = EntityUtils.toString(entity1).trim();
@@ -162,6 +163,7 @@ public class DebitWorkerThread implements Runnable {
                 response1.close();
             } catch (IOException ex) {
                 logger.error("IOException thrown: " + ex.getMessage());
+                logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             }
             //ussdBean.sendSMS(msisdn, "This is a test message for " + currency + "{AMOUNT} sending PIN: 123456 with serial: 6541239834");
             //ussdBean.saveUssdLog(msisdn, "PIN_PURCHASE_"+currency, "DONE");
@@ -169,6 +171,9 @@ public class DebitWorkerThread implements Runnable {
             logger.error("InterruptedException thrown: " + ex.getMessage());
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException ex) {
             logger.error("KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException thrown: " + ex.getMessage());
+        }catch (Throwable ex) {
+            logger.error("Throwable thrown: " + ex.getMessage());
+            logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
         }
         MDC.remove("session");
     }

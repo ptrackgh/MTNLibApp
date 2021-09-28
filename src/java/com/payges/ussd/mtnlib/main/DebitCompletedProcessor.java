@@ -106,12 +106,12 @@ public class DebitCompletedProcessor implements Runnable {
                 } else if (statuscode.equals("100")) {
                     logger.info("going to call gettransaction status as the response received from SDP is 'NOT COMPLETED'");
                     Gettransactionstatusresponse resp_ = getTransactionStatus(transaction.getMsisdn());
-                    if(null==resp_ || resp_.getStatus().equals(Financialtransactionstatus.PENDING)){
+                    if(null==resp_ || Financialtransactionstatus.PENDING.equals(resp_.getStatus())){
                         logger.info("gettransaction status returned PENDING response. Going to try again in 5mins");
                         Thread.sleep(5*60*1000);
                         Gettransactionstatusresponse resp2 = getTransactionStatus(transaction.getMsisdn());
                         logger.info("gettransaction status called 2nd retry");
-                        if(null==resp_ || !resp2.getStatus().equals(Financialtransactionstatus.SUCCESSFUL)){
+                        if(null==resp_ || !Financialtransactionstatus.SUCCESSFUL.equals(resp2.getStatus())){
                             Transactions transaction2 = ussdBean.getTransaction(transactionid);
                             if("SUCCESS".equals(transaction2.getStatus())){
                                 logger.info("After 2nd retry found transaction to have already been completed successfully. Exiting to avoid duplicate pin vending");
@@ -123,7 +123,7 @@ public class DebitCompletedProcessor implements Runnable {
                             logger.info("gettransaction status returned SUCCESSFUL response. going to vend pin");
                             transaction = callWaecToVend(transaction);
                         }
-                    }else if(resp_.getStatus().equals(Financialtransactionstatus.SUCCESSFUL)){
+                    }else if(Financialtransactionstatus.SUCCESSFUL.equals(resp_.getStatus())){
                         logger.info("gettransaction status returned SUCCESSFUL response. going to vend pin");
                         transaction = callWaecToVend(transaction);
                     }else{
@@ -175,7 +175,7 @@ public class DebitCompletedProcessor implements Runnable {
             logger.info("Going to call URL: '" + url + "' request payload:\n" + xmlString.replace("\n", "") + "\n @ Date: " + before);
             try (CloseableHttpResponse response1 = client.execute(post)) {
                 final Date after = new Date();
-                logger.info("http response received from HSDP @ " + new Date());
+                logger.info("getTransactionStatus response @ " + new Date());
                 logger.info("HSDP_Stats|" + ((after.getTime() - before.getTime()) / 1000) + "secs|" + transactionid);
                 final HttpEntity entity1 = response1.getEntity();
                 final String httpResp = EntityUtils.toString(entity1).trim();
@@ -188,9 +188,11 @@ public class DebitCompletedProcessor implements Runnable {
                 response1.close();
             } catch (IOException ex) {
                 logger.error("IOException thrown: " + ex.getMessage());
+                logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
             }
         } catch (Exception ex) {
             logger.error("Exception thrown: " + ex.getMessage());
+            logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
         }
         return gResp;
     }
