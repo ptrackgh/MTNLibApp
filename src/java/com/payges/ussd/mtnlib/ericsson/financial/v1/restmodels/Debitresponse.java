@@ -1,6 +1,7 @@
 
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.financial.v1.restmodels;
 
+import com.payges.ussd.mtnlib.ericsson.restmodels.Financialtransactionstatus;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -33,8 +34,8 @@ import javax.xml.bind.annotation.XmlType;
     "transactionid",
     "status"
 })
-@XmlRootElement(name = "gettransactionstatusresponse", namespace="http://www.ericsson.com/em/emm/financial/v1_2")
-public class Gettransactionstatusresponse {
+@XmlRootElement(name = "debitresponse")
+public class Debitresponse {
 
     protected long transactionid;
     @XmlElement(required = true)

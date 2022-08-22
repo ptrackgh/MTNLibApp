@@ -7,8 +7,8 @@ package com.payges.ussd.mtnlib.main;
 
 import com.payges.ussd.mtnlib.entities.Serials;
 import com.payges.ussd.mtnlib.entities.Transactions;
-import com.payges.ussd.mtnlib.ericsson.restmodels.Financialtransactionstatus;
-import com.payges.ussd.mtnlib.ericsson.restmodels.Gettransactionstatusresponse;
+import com.payges.ussd.mtnlib.ericsson.restmodels1.Financialtransactionstatus;
+import com.payges.ussd.mtnlib.ericsson.restmodels1.Gettransactionstatusresponse;
 import static com.payges.ussd.mtnlib.main.DebitCompletedProcessor.dateFomrmatter;
 import static com.payges.ussd.mtnlib.main.DebitWorkerThread.getClientSSL;
 import com.payges.ussd.mtnlib.util.UssdConstants;
@@ -83,6 +83,7 @@ public class DebitCompletedProcessor implements Runnable {
                 if (statuscode.equals("01")) {
 //                if(transaction.getMsisdn().equals("231888921776")){
                     logger.info("transaction was approved. going to call waec");
+                    //no need to call below since we have migrated to PO!
                     transaction = callWaecToVend(transaction);
 //                }else{
 //                    logger.info(transactionid + " was approved!");

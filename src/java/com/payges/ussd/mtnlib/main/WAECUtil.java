@@ -100,7 +100,10 @@ public class WAECUtil {
         String serviceCode;
         if("REGISTRATION".equals(pintype)){
             serviceCode = UssdConstants.PIN_TYPE_REGISTRATION;
-        }else{
+        }else if("MINI-REGISTRATION".equals(pintype)){
+            serviceCode = UssdConstants.PIN_TYPE_MINI_REGISTRATION;
+        }
+        else{
             serviceCode = UssdConstants.PIN_TYPE_RESULT_CHECKER;
         }
             try {

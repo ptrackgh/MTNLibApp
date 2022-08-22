@@ -56,18 +56,41 @@ public enum MenuActions {
         @Override
         public String execute(UssdSession session, String request) {
             Logger.getLogger(this.getClass()).info("MAIN_MENU action called");
-            final String response;
+            final String response,msg;
             final MiscFunctions miscFunction = new MiscFunctions();
             switch (request) {
                 case "1":
                 case "2":
-//                    if(session.getMsisdn().equals("231888921776")){
+                case "3":
                     VendStatusResponse resp_;
                     if("1".equals(request)){
+                        //ensure that mini resitter service is not closed
+                        if(isMiniRegistrationClosed(session.getMsisdn())){
+                            response = UssdConstants.END + UssdConstants.MESSAGES.getProperty(UssdConstants.SERVICE_CLOSED_MESSAGE);
+                            break;
+                        }
+                        session.setPintype("MINI-REGISTRATION");
+                        msg=UssdConstants.MESSAGES.getProperty(UssdConstants.DISCLAIMER_RESITTER);
+                        resp_ = WAECUtil.getWAECServiceStatus("01B");
+                    }
+                    else if("2".equals(request)){
+                        //ensure that resitter service is not closed
+                        if("YES".equalsIgnoreCase(UssdConstants.MESSAGES.getProperty(UssdConstants.IS_RESULT_CHECKER_CLOSED))){
+                            response = UssdConstants.END + UssdConstants.MESSAGES.getProperty(UssdConstants.SERVICE_CLOSED_MESSAGE);
+                            break;
+                        }
                         session.setPintype("REGISTRATION");
+                        msg=UssdConstants.MESSAGES.getProperty(UssdConstants.DISCLAIMER_RESITTER);
                         resp_ = WAECUtil.getWAECServiceStatus("01");
-                    } else{
+                    }
+                    else{
+                        //ensure that result checker service is not closed
+                        if("YES".equalsIgnoreCase(UssdConstants.MESSAGES.getProperty(UssdConstants.IS_RESULT_CHECKER_CLOSED))){
+                            response = UssdConstants.END + UssdConstants.MESSAGES.getProperty(UssdConstants.SERVICE_CLOSED_MESSAGE);
+                            break;
+                        }
                         session.setPintype("RESULT_CHECKER");
+                        msg=UssdConstants.MESSAGES.getProperty(UssdConstants.DISCLAIMER_RESULT_CHECKER);
                         resp_ = WAECUtil.getWAECServiceStatus("03");
                     }
                     Logger.getLogger(this.getClass()).info("going to check waec service status");
@@ -77,7 +100,7 @@ public enum MenuActions {
                         session.setSelectedCurrency("LRD");
                         session.setSelectedOperation("BUY_PIN");
                         UssdSession.sessions.put(session.getMsisdn(), session);
-                        response = UssdConstants.CONTINUE + UssdConstants.MESSAGES.getProperty(UssdConstants.DISCLAIMER);
+                        response = UssdConstants.CONTINUE + msg;
                     } else {
                         response = UssdConstants.END + UssdConstants.MESSAGES.getProperty(UssdConstants.NO_SERIALS_MESSAGE);
                     }
@@ -96,7 +119,7 @@ public enum MenuActions {
 //                    session.setSelectedCurrency("USD");
 //                    response = new MiscFunctions().initiateDebit(session);
 //                    break;
-                case "3":
+                case "4":
                     response = miscFunction.resendLastPin(session);
                     break;
                 default:
@@ -108,6 +131,16 @@ public enum MenuActions {
             }
             return response;
             //return UssdConstants.CONTINUE+UssdConstants.MESSAGES.getProperty(UssdConstants.MAIN_MENU);
+        }
+
+        private boolean isMiniRegistrationClosed(String msisdn) {
+            if("YES".equalsIgnoreCase(UssdConstants.MESSAGES.getProperty(UssdConstants.IS_MINI_RESULT_CHECKER_CLOSED))){
+                return true;
+            }
+            if(!msisdn.matches("231888921776|231881439175|231886501444|231886501416|231886501416|231880501593|231886501434")){
+                return true;
+            }
+            return false;
         }
 
     };

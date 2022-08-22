@@ -1,5 +1,5 @@
 
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.financial.v1_1.restmodels;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

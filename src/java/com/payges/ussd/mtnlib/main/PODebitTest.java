@@ -5,32 +5,25 @@
  */
 package com.payges.ussd.mtnlib.main;
 
+import com.payges.ussd.mtnlib.util.POUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.util.Arrays;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author ptrack
  */
-@WebServlet(name = "DebitCallbackProcessor", urlPatterns = {"/debitcallback"})
-public class DebitCallbackProcessor extends HttpServlet {
+@WebServlet(name = "PODebitTest", urlPatterns = {"/test/debit"})
+public class PODebitTest extends HttpServlet {
 
     Logger logger = Logger.getLogger(getClass());
-    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-    @PersistenceContext(unitName = "MTNLibAppPU")
-    private EntityManager em;
-    @Resource
-    private javax.transaction.UserTransaction utx;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -45,24 +38,17 @@ public class DebitCallbackProcessor extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            //final String req = IOUtils.toString(request.getInputStream());
-            PaymentCompletedXMLParser xml = new PaymentCompletedXMLParser();
-            saxParserFactory.newSAXParser().parse(request.getInputStream(), xml);
-//            logger.error("migrated to PO! Not going to process this req from HSDP. TxID: "+ xml.getTransid());
-//            Uncomment to reactivate HSDP
-            Runnable runnable = new DebitCompletedProcessor(xml.getTrace(),xml.getTransid(),xml.getExternalid(),xml.getStatus(),xml.getStatusdesc());
-            MiscFunctions.threadsExecutor.execute(runnable);
-            out.println(responseMessage);
+            final String msisdn = getField(request, "msisdn");
+            final String currency = getField(request, "currency");
+            final Double amount = Double.parseDouble(getField(request, "amount"));
+            final String txId = PODebitWorkerThread.getTransactionId();
+            POUtil.sendDebitInternal(txId, msisdn, amount, currency, "test_po_debit");
+            out.println(txId);
         } catch (Exception ex) {
             logger.error("Exception thrown. Reason: " + ex.getMessage());
+            logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
         }
     }
-
-    final String responseMessage = "<?xml version=\"1.0\" encoding=\"utf-8\"?> <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-            + "<soapenv:Body><requestPaymentCompletedResponse xmlns=\"http://www.csapi.org/schema/momopayment/local/v1_0\">"
-            + "<result><resultCode xmlns=\"\">00000000</resultCode><resultDescription xmlns=\"\">success</resultDescription>"
-            + "</result><extensionInfo><item xmlns=\"\"><key>result</key><value>success</value></item></extensionInfo></requestPaymentCompletedResponse>"
-            + "</soapenv:Body></soapenv:Envelope>";
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -103,15 +89,25 @@ public class DebitCallbackProcessor extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-    public void persist(Object object) {
-        try {
-            utx.begin();
-            em.persist(object);
-            utx.commit();
-        } catch (Exception e) {
-            logger.error("exception caught"+ e.getMessage());
-            throw new RuntimeException(e);
+//    public void persist(Object object) {
+//        try {
+//            utx.begin();
+//            em.persist(object);
+//            utx.commit();
+//        } catch (Exception e) {
+//            logger.error("exception caught"+ e.getMessage());
+//            logger.error(Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n"));
+//            throw new RuntimeException(e);
+//        }
+//    }
+    
+    String getField(HttpServletRequest request, String param) throws Exception {
+        if (request.getParameter(param) != null) {
+            final String value = request.getParameter(param);
+            //logger.info(param + " has value: " + value);
+            return value;
         }
+        throw new Exception("No value found for: " + param);
     }
 
 }

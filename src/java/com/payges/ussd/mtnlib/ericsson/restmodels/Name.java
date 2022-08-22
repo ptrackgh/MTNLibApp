@@ -5,7 +5,6 @@
  */
 package com.payges.ussd.mtnlib.ericsson.restmodels;
 
-import java.math.BigDecimal;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -13,17 +12,17 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for moneydetailstype complex type.
+ * <p>Java class for name complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="moneydetailstype">
+ * &lt;complexType name="name">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="amount" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
- *         &lt;element name="currency" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="firstname" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="lastname" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -33,69 +32,63 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "moneydetailstype", propOrder = {
-    "amount",
-    "currency"
+@XmlType(name = "name", propOrder = {
+    "firstname",
+    "lastname"
 })
-public class Moneydetailstype {
+public class Name {
 
     @XmlElement(required = true)
-    protected BigDecimal amount;
+    protected String firstname;
     @XmlElement(required = true)
-    protected String currency;
+    protected String lastname;
 
     /**
-     * Gets the value of the amount property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
-     */
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    /**
-     * Sets the value of the amount property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
-     */
-    public void setAmount(BigDecimal value) {
-        this.amount = value;
-    }
-
-    /**
-     * Gets the value of the currency property.
+     * Gets the value of the firstname property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getCurrency() {
-        return currency;
+    public String getFirstname() {
+        return firstname;
     }
 
     /**
-     * Sets the value of the currency property.
+     * Sets the value of the firstname property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setCurrency(String value) {
-        this.currency = value;
+    public void setFirstname(String value) {
+        this.firstname = value;
     }
 
-    @Override
-    public String toString() {
-        return "Moneydetailstype{" + "amount=" + amount + ", currency=" + currency + '}';
+    /**
+     * Gets the value of the lastname property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLastname() {
+        return lastname;
+    }
+
+    /**
+     * Sets the value of the lastname property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLastname(String value) {
+        this.lastname = value;
     }
 
 }
-

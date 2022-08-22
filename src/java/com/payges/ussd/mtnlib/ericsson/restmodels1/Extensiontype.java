@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.restmodels1;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -70,12 +69,6 @@ public class Extensiontype {
             any = new ArrayList<Element>();
         }
         return this.any;
-    }
-
-    @Override
-    public String toString() {
-        return any.stream().map(e -> "{Key: "+e.getNodeName()+", value:"+e.getTextContent()+"}").collect(Collectors.joining(", "));
-        //return any.forEach(action);
     }
 
 }

@@ -55,12 +55,14 @@ public class MTNLibUSSD extends HttpServlet {
 //                out.println(UssdConstants.END+respMsg);
 
 ///////////////////////////////BEGIN BLOCK FOR WHITELISTED NOs/////////////////////////////////////////////////////////////
-//                if(!msisdn.matches("231888921776|231881439175|231886501444")){
-//                    logger.info(msisdn+" not allowed to use the shortcode at this time");
-//                    out.println(UssdConstants.END+"You are not allowed to use the service at this time. Please try again later.");
-//                    MDC.remove("session");
-//                    return;
-//                }
+                //if(!msisdn.matches("231888921776|231881439175|231886501444|231886501416|231886501416|231880501593|231886501434")){
+                if("YES".equals(UssdConstants.MESSAGES.getProperty("DISABLE_PUBLIC_MSISDN")) &&
+                        !msisdn.matches(UssdConstants.MESSAGES.getProperty(UssdConstants.MSISDN_WHITELIST))){
+                    logger.info(msisdn+" not allowed to use the shortcode at this time");
+                    out.println(UssdConstants.END+UssdConstants.MESSAGES.getProperty("SERVICE_BLOCKED_MSG"));
+                    MDC.remove("session");
+                    return;
+                }
 ///////////////////////////////END BLOCK FOR WHITELISTED NOs/////////////////////////////////////////////////////////////
                 final UssdSession existingSession = UssdSession.sessions.get(msisdn);
                 if(null==existingSession || !dialogueid.equals(existingSession.getDialogueID())){
@@ -84,7 +86,8 @@ public class MTNLibUSSD extends HttpServlet {
                 }else{
                     response.addHeader("Freeflow", "FB");
                 }
-                out.println(ussdresponse);
+                //remove 1, or 2, required for previous ussdgw
+                out.println(ussdresponse.substring(2));
             } catch (Exception ex) {
                 logger.error("Exception thrown. Reason: " + ex.getMessage());
                 logger.error("1|2,Internal Error occured. Please try again.");

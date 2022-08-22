@@ -51,7 +51,16 @@ public class MiscFunctions {
     
     String initiateDebit(UssdSession session) {
         logger.info("called initiate debit request for "+ session.getMsisdn());
-        Runnable runnable = new DebitWorkerThread(session);
+        Runnable runnable;
+        //below is for hsdp
+        //Runnable runnable = new DebitWorkerThread(session);
+        if("PO".equals(UssdConstants.MESSAGES.getProperty(UssdConstants.PAYMENT_PROVIDER))){
+            runnable = new PODebitWorkerThread(session);
+        } else {
+            runnable = new DebitWorkerThread(session);
+        }
+        //below is for Debits to PO
+//        Runnable runnable = new PODebitWorkerThread(session);
         threadsExecutor.execute(runnable);
         final String response = UssdConstants.END+UssdConstants.MESSAGES.getProperty(UssdConstants.DEBIT_HOLDING_MESSAGE);
         logger.info("sending {"+ response+"} to "+session.getMsisdn());

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.restmodels1;
 
 import java.math.BigDecimal;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -90,11 +90,6 @@ public class Moneydetailstype {
      */
     public void setCurrency(String value) {
         this.currency = value;
-    }
-
-    @Override
-    public String toString() {
-        return "Moneydetailstype{" + "amount=" + amount + ", currency=" + currency + '}';
     }
 
 }

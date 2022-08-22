@@ -1,6 +1,8 @@
 
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.sp.backend.restmodels;
 
+import com.payges.ussd.mtnlib.ericsson.restmodels.Extensiontype;
+import com.payges.ussd.mtnlib.ericsson.restmodels.Moneydetailstype;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -215,6 +217,11 @@ public class Paymentrequest {
      */
     public void setVersion(String value) {
         this.version = value;
+    }
+
+    @Override
+    public String toString() {
+        return "Paymentrequest{" + "transactionid=" + transactionid + ", accountholderid=" + accountholderid + ", receivingfri=" + receivingfri + ", amount=" + amount + ", message=" + message + ", extension=" + extension + ", version=" + version + '}';
     }
 
 }

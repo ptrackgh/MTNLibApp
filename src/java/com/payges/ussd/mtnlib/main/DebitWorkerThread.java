@@ -5,7 +5,6 @@
  */
 package com.payges.ussd.mtnlib.main;
 
-import com.payges.ussd.mtnlib.entities.Currencies;
 import com.payges.ussd.mtnlib.util.UssdConstants;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,20 +38,21 @@ import org.apache.log4j.MDC;
  * @author ptrack
  */
 public class DebitWorkerThread implements Runnable {
+
     //static Logger logger = Logger.getLogger(DebitWorkerThread.getClass());
     DecimalFormat df = new DecimalFormat("####0.00");
     UssdBean ussdBean = lookupUssdBeanBean();
     String currency;
     String msisdn;
     UssdSession session;
-    
+
     final static String spId = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_SP_ID);
     final static String spPassword = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_SP_PASSWORD);
     final static String serviceId = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_MOMO_ID);
     final static String spTimestamp = UssdConstants.MESSAGES.getProperty(UssdConstants.HSDP_SP_TIMESTAMP);
     final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSSS");
     final static Random rand = new Random();
-    
+
     public final String debitrequest_old = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:b2b=\"http://b2b.mobilemoney.mtn.zm_v1.0\">\n"
             + "<soapenv:Header>\n"
             + "<RequestSOAPHeader xmlns=\"http://www.huawei.com.cn/schema/common/v2_1\">\n"
@@ -80,7 +80,7 @@ public class DebitWorkerThread implements Runnable {
             + "</b2b:processRequest>\n"
             + "</soapenv:Body>\n"
             + "</soapenv:Envelope>";
-    
+
     public final String debitrequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:b2b=\"http://b2b.mobilemoney.mtn.zm_v1.0\">\n"
             + "<soapenv:Header>\n"
             + "<RequestSOAPHeader xmlns=\"http://www.huawei.com.cn/schema/common/v2_1\">\n"
@@ -94,15 +94,16 @@ public class DebitWorkerThread implements Runnable {
             + "<b2b:processRequest>\n"
             + "<serviceId>100</serviceId>\n"
             + "<parameter><name>DueAmount</name><value>%5$s</value></parameter>\n"
-//            + "<parameter><name>MSISDNNum</name><value>FRI:%6$s/MSISDN</value></parameter>\n"
+            //            + "<parameter><name>MSISDNNum</name><value>FRI:%6$s/MSISDN</value></parameter>\n"
             + "<parameter><name>MSISDNNum</name><value>%6$s</value></parameter>\n"
             + "<parameter><name>ProcessingNumber</name><value>%7$s</value></parameter>\n"
             + "<parameter><name>serviceId</name><value>%3$s</value></parameter>\n"
-//            + "<parameter><name>AcctRef</name><value>FRI:%6$s@%3$s/SP</value></parameter>\n"
+            //            + "<parameter><name>AcctRef</name><value>FRI:%6$s@%3$s/SP</value></parameter>\n"
             + "<parameter><name>AcctRef</name><value>WAEC</value></parameter>\n"
             + "<parameter><name>AcctBalance</name><value>0</value></parameter>\n"
             + "<parameter><name>MinDueAmount</name><value>0</value></parameter>\n"
-            + "<parameter><name>Narration</name><value>waec bill payment for %7$s</value></parameter>\n"
+            //            + "<parameter><name>Narration</name><value>waec bill payment for %7$s</value></parameter>\n"
+            + "<parameter><name>Narration</name><value>waec billpay</value></parameter>\n"
             + "<parameter><name>PrefLang</name><value>en</value></parameter>\n"
             + "<parameter><name>OpCoID</name><value>23101</value></parameter>\n"
             + "<parameter><name>CurrCode</name><value>%8$s</value></parameter>\n"
@@ -113,7 +114,7 @@ public class DebitWorkerThread implements Runnable {
     public DebitWorkerThread(UssdSession session) {
         this.session = session;
         this.msisdn = session.getMsisdn();
-        this.currency = session.getSelectedCurrency();
+        this.currency = "LD".equals(session.getSelectedCurrency()) ? "LRD" : session.getSelectedCurrency();
     }
 
     @Override
@@ -130,21 +131,35 @@ public class DebitWorkerThread implements Runnable {
             CloseableHttpClient client = getClientSSL(url);
             HttpPost post = new HttpPost(url);
             final String xmlString;
-            if("REGISTRATION".equals(session.getPintype())){
-                Currencies debitAmount = ussdBean.getDebitAmount(currency);
-                ussdBean.saveUssdLog(msisdn, "PURCHASE_PIN_"+currency, "PENDING");
-                ussdBean.saveDebitTransaction(msisdn, debitAmount.getExchangerate(), currency, transactionId,"REGISTRATION");
-                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
-                        df.format(debitAmount.getExchangerate()),msisdn,transactionId,currency);
-            }else{
-//                Currencies debitAmount = ussdBean.getDebitAmount(currency);
-                ussdBean.saveUssdLog(msisdn, "RESULT_CHECKER_"+currency, "PENDING");
-                ussdBean.saveDebitTransaction(msisdn, Double.parseDouble(session.getVendstatus().getCost()), 
-                        session.getVendstatus().getCurrency(), transactionId,"RESULT_CHECKER");
-                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
-                        df.format(Double.parseDouble(session.getVendstatus().getCost())),msisdn,transactionId,session.getVendstatus().getCurrency());
+            Double cost = Double.parseDouble(session.getVendstatus().getCost());
+            if ("REGISTRATION".equals(session.getPintype())) {
+                //Currencies debitAmount = ussdBean.getDebitAmount(currency);
+//                Double cost = Double.parseDouble(session.getVendstatus().getCost());
+                ussdBean.saveUssdLog(msisdn, "PURCHASE_PIN_" + currency, "PENDING");
+                ussdBean.saveDebitTransaction(msisdn, cost, currency, transactionId, "REGISTRATION");
+//                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
+//                        df.format(debitAmount.getExchangerate()),msisdn,transactionId,currency);
+                xmlString = String.format(debitrequest, spId, spPassword, serviceId, spTimestamp,
+                        df.format(cost), msisdn, transactionId, currency);
+            } 
+            else if("MINI-REGISTRATION".equals(session.getPintype())){
+                //Currencies debitAmount = ussdBean.getDebitAmount(currency);
+//                Double cost = Double.parseDouble(session.getVendstatus().getCost());
+                ussdBean.saveUssdLog(msisdn, "PURCHASE_MINI-PIN_"+currency, "PENDING");
+                ussdBean.saveDebitTransaction(msisdn, cost, currency, transactionId,"MINI-REGISTRATION");
+                xmlString = String.format(debitrequest, spId, spPassword, serviceId, spTimestamp, df.format(cost), msisdn, transactionId, currency);
             }
-            
+            else {
+//                Currencies debitAmount = ussdBean.getDebitAmount(currency);
+//                Double cost = Double.parseDouble(session.getVendstatus().getCost());
+                ussdBean.saveUssdLog(msisdn, "RESULT_CHECKER_" + currency, "PENDING");
+                ussdBean.saveDebitTransaction(msisdn, cost,currency, transactionId, "RESULT_CHECKER");
+//                xmlString = String.format(debitrequest, spId,spPassword,serviceId,spTimestamp,
+//                        df.format(Double.parseDouble(session.getVendstatus().getCost())),msisdn,transactionId,session.getVendstatus().getCurrency());
+                final String cur = "LD".equals(session.getVendstatus().getCurrency()) ? "LRD" : session.getVendstatus().getCurrency();
+                xmlString = String.format(debitrequest, spId, spPassword, serviceId, spTimestamp, df.format(cost), msisdn, transactionId, cur);
+            }
+
             HttpEntity entity = new StringEntity(xmlString);
             post.setEntity(entity);
             final Date before = new Date();
@@ -171,7 +186,7 @@ public class DebitWorkerThread implements Runnable {
             logger.error("InterruptedException thrown: " + ex.getMessage());
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException ex) {
             logger.error("KeyManagementException | NoSuchAlgorithmException | KeyStoreException | UnsupportedEncodingException thrown: " + ex.getMessage());
-        }catch (Throwable ex) {
+        } catch (Throwable ex) {
             logger.error("Throwable thrown: " + ex.getMessage());
             logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
         }
@@ -208,15 +223,15 @@ public class DebitWorkerThread implements Runnable {
             Context c = new InitialContext();
             return (UssdBean) c.lookup("java:global/MTNLibApp/UssdBean!com.payges.ussd.mtnlib.main.UssdBean");
         } catch (NamingException ne) {
-            Logger.getLogger(this.getClass()).info("exception caught: "+ ne);
+            Logger.getLogger(this.getClass()).info("exception caught: " + ne);
             throw new RuntimeException(ne);
         }
     }
-    
-    public static String getTransactionId(){
+
+    public static String getTransactionId() {
         return dateFormat.format(new Date()) + rand.nextInt(10);
     }
-    
+
 //    public static void main(String s[]){
 //        System.out.println("transactionID1: "+getTransactionId());
 //        System.out.println("transactionID2: "+getTransactionId());

@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.payges.ussd.mtnlib.ericsson.restmodels;
+package com.payges.ussd.mtnlib.ericsson.legacy.restmodels;
 
 
 
+import com.payges.ussd.mtnlib.ericsson.restmodels.Financialtransactionstatus;
+import com.payges.ussd.mtnlib.ericsson.restmodels.Receiverinfo;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -170,4 +172,8 @@ public class Debitcompletedrequest {
         this.version = value;
     }
 
+    @Override
+    public String toString() {
+        return "Debitcompletedrequest{" + "transactionid=" + transactionid + ", externaltransactionid=" + externaltransactionid + ", receiverinfo=" + receiverinfo + ", status=" + status + ", version=" + version + '}';
+    }
 }

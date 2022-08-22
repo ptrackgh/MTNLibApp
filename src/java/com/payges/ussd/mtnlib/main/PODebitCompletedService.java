@@ -5,8 +5,12 @@
  */
 package com.payges.ussd.mtnlib.main;
 
+import com.payges.ussd.mtnlib.ericsson.legacy.restmodels.Debitcompletedrequest;
+import com.payges.ussd.mtnlib.ericsson.legacy.restmodels.Debitcompletedresponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,6 +19,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
@@ -22,8 +29,8 @@ import org.apache.log4j.Logger;
  *
  * @author ptrack
  */
-@WebServlet(name = "DebitCallbackProcessor", urlPatterns = {"/debitcallback"})
-public class DebitCallbackProcessor extends HttpServlet {
+@WebServlet(name = "PODebitCompletedService", urlPatterns = {"/debitcompleted"})
+public class PODebitCompletedService extends HttpServlet {
 
     Logger logger = Logger.getLogger(getClass());
     SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
@@ -46,23 +53,22 @@ public class DebitCallbackProcessor extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             //final String req = IOUtils.toString(request.getInputStream());
-            PaymentCompletedXMLParser xml = new PaymentCompletedXMLParser();
-            saxParserFactory.newSAXParser().parse(request.getInputStream(), xml);
-//            logger.error("migrated to PO! Not going to process this req from HSDP. TxID: "+ xml.getTransid());
-//            Uncomment to reactivate HSDP
-            Runnable runnable = new DebitCompletedProcessor(xml.getTrace(),xml.getTransid(),xml.getExternalid(),xml.getStatus(),xml.getStatusdesc());
+            JAXBContext jContext = JAXBContext.newInstance(Debitcompletedrequest.class);
+            //creating the unmarshall object
+            Unmarshaller unmarshallerObj = jContext.createUnmarshaller();
+            //calling the unmarshall method
+            Debitcompletedrequest xml=(Debitcompletedrequest) unmarshallerObj.unmarshal(request.getInputStream());
+            //getExternaltransactionid is our internal txID sent to PO
+            Runnable runnable = new PODebitCompletedProcessor(xml.getExternaltransactionid(),""+xml.getTransactionid(),xml.getStatus());
             MiscFunctions.threadsExecutor.execute(runnable);
-            out.println(responseMessage);
+            final StringWriter sw = new StringWriter();
+            JAXB.marshal(new Debitcompletedresponse(), sw);
+            out.println(sw.toString());
         } catch (Exception ex) {
             logger.error("Exception thrown. Reason: " + ex.getMessage());
+            logger.error(Arrays.toString(ex.getStackTrace()).replaceAll(", ", "\n"));
         }
     }
-
-    final String responseMessage = "<?xml version=\"1.0\" encoding=\"utf-8\"?> <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-            + "<soapenv:Body><requestPaymentCompletedResponse xmlns=\"http://www.csapi.org/schema/momopayment/local/v1_0\">"
-            + "<result><resultCode xmlns=\"\">00000000</resultCode><resultDescription xmlns=\"\">success</resultDescription>"
-            + "</result><extensionInfo><item xmlns=\"\"><key>result</key><value>success</value></item></extensionInfo></requestPaymentCompletedResponse>"
-            + "</soapenv:Body></soapenv:Envelope>";
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -110,6 +116,7 @@ public class DebitCallbackProcessor extends HttpServlet {
             utx.commit();
         } catch (Exception e) {
             logger.error("exception caught"+ e.getMessage());
+            logger.error(Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n"));
             throw new RuntimeException(e);
         }
     }
